@@ -4,7 +4,7 @@ function App() {
 
   return (
     <>
-      <h1>Weekday</h1>
+      <h1>Weekday app started</h1>
     </>
   )
 }
