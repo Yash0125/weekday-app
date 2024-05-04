@@ -1,10 +1,11 @@
 import './App.css'
+import JobList from './components/JobList'
 
 function App() {
 
   return (
     <>
-      <h1>Weekday app started</h1>
+      <JobList/>
     </>
   )
 }
