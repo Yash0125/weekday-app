@@ -10,6 +10,11 @@ import {
   Modal,
   Backdrop,
   Fade,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@material-ui/core";
 
 const JobList = () => {
@@ -18,6 +23,14 @@ const JobList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedJob, setSelectedJob] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [filters, setFilters] = useState({
+    selectedExperience: "",
+    companyNameFilter: "",
+    locationFilter: "",
+    remoteFilter: "",
+    roleFilter: "",
+    minBasePayFilter: "",
+  });
   const observer = useRef();
 
   const fetchData = async () => {
@@ -25,10 +38,14 @@ const JobList = () => {
     try {
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
-      const body = JSON.stringify({
+
+      const filterParams = {
         limit: 10,
         offset: (currentPage - 1) * 10,
-      });
+        ...filters,
+      };
+
+      const body = JSON.stringify(filterParams);
 
       const requestOptions = {
         method: "POST",
@@ -48,16 +65,21 @@ const JobList = () => {
       const result = await response.json();
       setData((prevData) => [...prevData, ...result.jdList]);
       setCurrentPage((prevPage) => prevPage + 1);
+
+      if (result.jdList.length === 0) {
+        setLoading(false);
+      }
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
+      setLoading(false);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData(); 
-  }, []);
+    fetchData();
+  }, [filters]);
 
   useEffect(() => {
     if (!loading && observer.current) {
@@ -71,7 +93,7 @@ const JobList = () => {
 
     observer.current = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
-        fetchData(); 
+        fetchData();
       }
     }, options);
 
@@ -84,7 +106,7 @@ const JobList = () => {
         observer.current.disconnect();
       }
     };
-  }, [loading, currentPage]);
+  }, [loading, currentPage, filters]);
 
   const handleOpenModal = (job) => {
     setSelectedJob(job);
@@ -95,13 +117,141 @@ const JobList = () => {
     setOpenModal(false);
   };
 
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [name]: value,
+    }));
+  };
+
+  const filteredData = data.filter((job) => {
+    const experienceFilter =
+      filters.selectedExperience !== ""
+        ? job.minExp <= parseInt(filters.selectedExperience)
+        : true;
+    const companyFilter =
+      filters.companyNameFilter !== ""
+        ? job.companyName
+            .toLowerCase()
+            .includes(filters.companyNameFilter.toLowerCase())
+        : true;
+    const locationFilter =
+      filters.locationFilter !== ""
+        ? job.location.toLowerCase().includes(filters.locationFilter.toLowerCase())
+        : true;
+    const remoteFilter =
+      filters.remoteFilter !== "" ? job.location.toLowerCase() === filters.remoteFilter : true;
+    const roleFilter =
+      filters.roleFilter !== ""
+        ? job.jobRole.toLowerCase().includes(filters.roleFilter.toLowerCase())
+        : true;
+    const minBasePayFilter =
+      filters.minBasePayFilter !== ""
+        ? job.minJdSalary >= parseInt(filters.minBasePayFilter.replace("k", ""))
+        : true;
+    return (
+      experienceFilter &&
+      companyFilter &&
+      locationFilter &&
+      remoteFilter &&
+      roleFilter &&
+      minBasePayFilter
+    );
+  });
+
   return (
     <Container>
-      <Typography variant="h1" gutterBottom>
+      <Typography variant="h1" style={{fontSize:"65px"}} gutterBottom>
         Weekday
       </Typography>
-      <Grid container spacing={8}>
-        {data.map((job, index) => (
+      <Grid container spacing={3}  style={{marginTop:"40px"}}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            name="selectedExperience"
+            label="Select Experience"
+            variant="outlined"
+            select
+            fullWidth
+            value={filters.selectedExperience}
+            onChange={handleFilterChange}
+          >
+            <MenuItem value="">Select Experience</MenuItem>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((exp) => (
+              <MenuItem key={exp} value={exp}>
+                {exp} years
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+        <Grid item xs={12} sm={6} >
+          <TextField
+            name="companyNameFilter"
+            label="Enter Company Name"
+            variant="outlined"
+            fullWidth
+            value={filters.companyNameFilter}
+            onChange={handleFilterChange}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            name="locationFilter"
+            label="Enter Location"
+            variant="outlined"
+            fullWidth
+            value={filters.locationFilter}
+            onChange={handleFilterChange}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel>Select Location</InputLabel>
+            <Select
+              name="remoteFilter"
+              value={filters.remoteFilter}
+              onChange={handleFilterChange}
+              label="Select Location"
+            >
+              <MenuItem value="">Select Location</MenuItem>
+              <MenuItem value="remote">Remote</MenuItem>
+              <MenuItem value="onsite">On-site</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            name="roleFilter"
+            label="Enter Job Role"
+            variant="outlined"
+            fullWidth
+            value={filters.roleFilter}
+            onChange={handleFilterChange}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel>Select Min Base Pay</InputLabel>
+            <Select
+              name="minBasePayFilter"
+              value={filters.minBasePayFilter}
+              onChange={handleFilterChange}
+              label="Select Min Base Pay"
+            >
+              <MenuItem value="">Select Min Base Pay</MenuItem>
+              {["10k", "20k", "30k", "40k", "50k", "60k", "70k", "80k", "90k", "100k+"].map(
+                (salary) => (
+                  <MenuItem key={salary} value={salary}>
+                    {salary}
+                  </MenuItem>
+                )
+              )}
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+      <Grid container spacing={8} style={{marginTop:"40px"}}>
+        {filteredData.map((job, index) => (
           <Grid item key={index} xs={12} sm={6} md={4}>
             <Card className="job-card" style={{ marginBottom: "10px" }}>
               <CardContent>
@@ -145,7 +295,6 @@ const JobList = () => {
                 >
                   Estimated Salary: {job.minJdSalary? job.minJdSalary :0}k - {job.maxJdSalary}k USD ⚠️
                 </Typography>
-
                 <Typography
                   variant="body2"
                   component="h3"
@@ -259,7 +408,7 @@ const JobList = () => {
           <CircularProgress />
         </div>
       )}
-      <div id="observer" style={{ height: "10px" }}></div>
+      <div id="observer" style={{ height: "3rem" }}></div>
 
       <Modal
         aria-labelledby="transition-modal-title"
