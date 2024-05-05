@@ -41,7 +41,7 @@ const Filter = ({ filters, handleFilterChange }) => {
       <Grid item xs={12} sm={6}>
         <TextField
           name="locationFilter"
-          label="Enter Location"
+          label="Enter Location Like Mumbai, Delhi"
           variant="outlined"
           fullWidth
           value={filters.locationFilter}
@@ -66,7 +66,7 @@ const Filter = ({ filters, handleFilterChange }) => {
       <Grid item xs={12} sm={6}>
         <TextField
           name="roleFilter"
-          label="Enter Job Role"
+          label="Enter Job Role Like Frontend , IOS, Android"
           variant="outlined"
           fullWidth
           value={filters.roleFilter}
