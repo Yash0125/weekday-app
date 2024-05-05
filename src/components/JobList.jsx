@@ -7,13 +7,9 @@ import {
   Modal,
   Backdrop,
   Fade,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from "@material-ui/core";
-import JobCard from "./JobCard"; 
+import JobCard from "./JobCard";
+import Filter from "./Filter";
 
 const JobList = () => {
   const [data, setData] = useState([]);
@@ -136,10 +132,14 @@ const JobList = () => {
         : true;
     const locationFilter =
       filters.locationFilter !== ""
-        ? job.location.toLowerCase().includes(filters.locationFilter.toLowerCase())
+        ? job.location
+            .toLowerCase()
+            .includes(filters.locationFilter.toLowerCase())
         : true;
     const remoteFilter =
-      filters.remoteFilter !== "" ? job.location.toLowerCase() === filters.remoteFilter : true;
+      filters.remoteFilter !== ""
+        ? job.location.toLowerCase() === filters.remoteFilter
+        : true;
     const roleFilter =
       filters.roleFilter !== ""
         ? job.jobRole.toLowerCase().includes(filters.roleFilter.toLowerCase())
@@ -163,102 +163,14 @@ const JobList = () => {
       <Typography variant="h1" style={{ fontSize: "65px" }} gutterBottom>
         Weekday
       </Typography>
-      <Grid container spacing={3}  style={{marginTop:"40px"}}>
-         <Grid item xs={12} sm={6}>
-           <TextField
-            name="selectedExperience"
-            label="Select Experience"
-            variant="outlined"
-            select
-            fullWidth
-            value={filters.selectedExperience}
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="">Select Experience</MenuItem>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((exp) => (
-              <MenuItem key={exp} value={exp}>
-                {exp} years
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        <Grid item xs={12} sm={6} >
-          <TextField
-            name="companyNameFilter"
-            label="Enter Company Name"
-            variant="outlined"
-            fullWidth
-            value={filters.companyNameFilter}
-            onChange={handleFilterChange}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            name="locationFilter"
-            label="Enter Location"
-            variant="outlined"
-            fullWidth
-            value={filters.locationFilter}
-            onChange={handleFilterChange}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel>Select Location</InputLabel>
-            <Select
-              name="remoteFilter"
-              value={filters.remoteFilter}
-              onChange={handleFilterChange}
-              label="Select Location"
-            >
-              <MenuItem value="">Select Location</MenuItem>
-              <MenuItem value="remote">Remote</MenuItem>
-              <MenuItem value="onsite">On-site</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            name="roleFilter"
-            label="Enter Job Role"
-            variant="outlined"
-            fullWidth
-            value={filters.roleFilter}
-            onChange={handleFilterChange}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel>Select Min Base Pay</InputLabel>
-            <Select
-              name="minBasePayFilter"
-              value={filters.minBasePayFilter}
-              onChange={handleFilterChange}
-              label="Select Min Base Pay"
-            >
-              <MenuItem value="">Select Min Base Pay</MenuItem>
-              {["10k", "20k", "30k", "40k", "50k", "60k", "70k", "80k", "90k", "100k+"].map(
-                (salary) => (
-                  <MenuItem key={salary} value={salary}>
-                    {salary}
-                  </MenuItem>
-                )
-              )}
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
+      <Filter filters={filters} handleFilterChange={handleFilterChange} />
       <Grid container spacing={8} style={{ marginTop: "40px" }}>
-        {/* Job Cards */}
-        {filteredData.map((job, index) => (
-          <JobCard
-            key={index}
-            job={job} // Pass the job object as a prop
-            handleOpenModal={handleOpenModal} // Pass the handleOpenModal function as a prop
-          />
-        ))}
+        {filteredData.length > 0 &&
+          filteredData.map((job, index) => (
+            <JobCard key={index} job={job} handleOpenModal={handleOpenModal} />
+          ))}
       </Grid>
-      {loading && (
+      {filteredData.length > 0 && loading && (
         <div
           style={{
             display: "flex",
@@ -268,6 +180,23 @@ const JobList = () => {
           }}
         >
           <CircularProgress />
+        </div>
+      )}
+      {filteredData.length === 0 && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "20px",
+          }}
+        >
+          <Typography
+            variant="body1"
+            style={{ fontWeight: "bold", fontSize: "24px" }}
+          >
+            No result found
+          </Typography>
         </div>
       )}
       <div id="observer" style={{ height: "3rem" }}></div>
