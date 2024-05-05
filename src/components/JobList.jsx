@@ -7,12 +7,17 @@ import {
   CardContent,
   Link,
   CircularProgress,
+  Modal,
+  Backdrop,
+  Fade,
 } from "@material-ui/core";
 
 const JobList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
   const observer = useRef();
 
   const fetchData = async () => {
@@ -81,6 +86,15 @@ const JobList = () => {
     };
   }, [loading, currentPage]);
 
+  const handleOpenModal = (job) => {
+    setSelectedJob(job);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
   return (
     <Container>
       <Typography variant="h1" gutterBottom>
@@ -102,7 +116,7 @@ const JobList = () => {
                   variant="h6"
                   color="textSecondary"
                   gutterBottom
-                  style={{ color: "gba(0, 0, 0, 0.87)" }}
+                  style={{ color: "rgba(0, 0, 0, 0.87)" }}
                 >
                   {job.jobRole.charAt(0).toUpperCase() + job.jobRole.slice(1)}
                 </Typography>
@@ -129,7 +143,7 @@ const JobList = () => {
                     marginTop: "1rem",
                   }}
                 >
-                  Estimated Salary: {job.minJdSalary}k - {job.maxJdSalary}k USD
+                  Estimated Salary: {job.minJdSalary? job.minJdSalary :0}k - {job.maxJdSalary}k USD ⚠️
                 </Typography>
 
                 <Typography
@@ -167,6 +181,7 @@ const JobList = () => {
                   >
                     <Link
                       variant="body2"
+                      onClick={() => handleOpenModal(job)}
                       style={{
                         textDecoration: "none",
                         color: "#007bff",
@@ -245,6 +260,41 @@ const JobList = () => {
         </div>
       )}
       <div id="observer" style={{ height: "10px" }}></div>
+
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        open={openModal}
+        onClose={handleCloseModal}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Fade in={openModal}>
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "20px",
+              borderRadius: "5px",
+              maxWidth: "600px",
+            }}
+          >
+            <Typography variant="h5" gutterBottom>
+              Full Job Description
+            </Typography>
+            <Typography variant="body1">
+              {selectedJob && selectedJob.jobDetailsFromCompany}
+            </Typography>
+          </div>
+        </Fade>
+      </Modal>
     </Container>
   );
 };
